@@ -2,8 +2,8 @@
 // Created by cbf on 20-2-20.
 //
 #include "../header/system.h"
-#include <errno.h>
-#include <string.h>
+#include <cerrno>
+#include <cstring>
 
 
 /*
@@ -24,7 +24,7 @@ void generate() {
     delete[](buf);
     fclose(fd);
 
-    // 创建用户
+    // 创建用户, 为简单起见，用户均内置，不可修改，共8个用户
     for (int i = 0; i < MAX_USER_NUM; ++i) {
         users[i].uid = 666666 + i;
         sprintf(users[i].name, "user_%d", i);
@@ -35,8 +35,8 @@ void generate() {
     superBlock.blocks_num = TOTAL_BLOCK_NUM;
     superBlock.inodes_num = TOTAL_INODE_NUM;
     superBlock.block_size = BLOCK_SIZE;
-    superBlock.free_blocks_num = TOTAL_BLOCK_NUM - DIR_SIZE * (MAX_USER_NUM + 1);
-    superBlock.free_inodes_num = TOTAL_INODE_NUM - 1 - MAX_USER_NUM;
+    superBlock.free_blocks_num = TOTAL_BLOCK_NUM - DIR_SIZE * (MAX_USER_NUM + 1); // 空闲块 = 全部 - 根目录用户目录占用的块数
+    superBlock.free_inodes_num = TOTAL_INODE_NUM - 1 - MAX_USER_NUM; // 空闲inode = 全部 - 根目录 - 用户目录
 
     // 初始化 bitmap & inode table
     for (bool & j : blockBitmap) {
@@ -45,6 +45,7 @@ void generate() {
     for (bool & i : inodeBitmap) {
         i = NUSED;
     }
+    // inode table默认为未知类型
     for (auto & i : inodeTable) {
         i.mode = UNKNOWN;
         i.row = RO;
@@ -53,16 +54,19 @@ void generate() {
         i.blocks = 0;
         i.block_addr = 0;
     }
+    // 更新被根目录和用户目录占用的块
     for (int i = 0; i < DIR_SIZE * (1 + MAX_USER_NUM); ++i) {
         blockBitmap[i] = USED;
     }
+    // 更新inodeBitmap，填充inode table的根目录及用户目录
     for (int k = 0; k < 1 + MAX_USER_NUM; ++k) {
         inodeBitmap[k] = USED;
         inodeTable[k].mode = DIRECTORY;
         inodeTable[k].size = sizeof(dir);
         inodeTable[k].blocks = DIR_SIZE;
         inodeTable[k].block_addr = FIRST_DATA_ADDR + DIR_SIZE * k * BLOCK_SIZE;
-        inodeTable[k].uid = k > 0 ? users[k-1].uid : 0;
+        inodeTable[k].uid = k > 0 ? users[k-1].uid : 0; // 判断是否根目录决定所属用户
+        inodeTable[k].row = RW;
     }
 
 
@@ -75,7 +79,7 @@ void generate() {
     strcpy(currDir.files[1].name, ".."); // 上级目录指向自身
     currDir.files[1].inode_idx = 0;
 
-    // 初始化用户目录
+    // 初始化用户目录, 绑定到根目录下
     dir userDir[MAX_USER_NUM];
     for (int i = 0; i < MAX_USER_NUM; ++i) {
         strcpy(userDir[i].name, users[i].name);
@@ -152,6 +156,7 @@ void login(std::vector<std::string> argv) {
     strcat(r, currUser.name);
     strcpy(currPath, r);
     dprintf(output, "登陆成功\n");
+    // TODO 后期任务三需要改造成支持保存多人信息
 }
 
 void logout(std::vector<std::string> argv) {
@@ -163,6 +168,12 @@ void help(std::vector<std::string> argv) {
     str += "---------------simdisk命令手册-----------------\n";
     str += "登录命令: login <username> <password>\n";
     str += "展示系统使用情况： info\n";
+    str += "查看手册: help\n";
+    str += "切换目录: cd <path>\n";
+    str += "查看当前目录: ls\n";
+    str += "查看目录: dir <path>\n";
+    str += "创建目录: md <path>\n";
+    str += "删除目录: rd [-f] <path> (-f 可选，表示递归删除)\n";
     // TODO 后续补充其他命令
     dprintf(output, str.c_str());
 }

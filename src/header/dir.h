@@ -7,8 +7,6 @@
 
 #include "const.h"
 #include "file.h"
-#include <vector>
-#include <string>
 #include "super_block.h"
 #include "inode.h"
 #include "user.h"
@@ -35,5 +33,7 @@ void display_dir(std::vector<std::string>);
 void remove_dir(std::vector<std::string>);
 
 void make_dir(std::vector<std::string>);
+
+void ls(std::vector<std::string>);
 
 #endif //SIMDISK_DIR_H

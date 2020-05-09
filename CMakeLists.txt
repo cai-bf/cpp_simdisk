@@ -3,4 +3,4 @@ project(simdisk)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(simdisk main.cpp header/const.h header/super_block.h header/inode.h header/file.h header/dir.h header/block_group.h header/user.h header/system.h source/system.cpp header/unity.h source/unity.cpp header/helpers.h source/helpers.cpp source/dir.cpp header/global.h)
+add_executable(simdisk src/main.cpp src/header/const.h src/header/super_block.h src/header/inode.h src/header/file.h src/header/dir.h src/header/user.h src/header/system.h src/source/system.cpp src/header/unity.h src/source/unity.cpp src/header/helpers.h src/source/helpers.cpp src/source/dir.cpp src/header/global.h src/source/file.cpp)
