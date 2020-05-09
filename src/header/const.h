@@ -14,7 +14,7 @@
 #define USED true  // bitmap 已使用
 
 #define UNKNOWN 0 // inode尚未分配到某类型
-#define FILE_ 1 // 文件类型
+#define FILE__ 1 // 文件类型
 #define DIRECTORY 2 // 目录类型
 
 //#define NOT_OPEN 0 // 未打开

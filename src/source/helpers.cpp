@@ -23,3 +23,11 @@ std::vector<std::string> split(const std::string str, const std::string sep){
     }
     return arr;
 }
+
+std::string join(const std::vector<std::string> &vec, int start, std::string sep) {
+    std::string res = vec[start];
+    for (start += 1; start < vec.size(); ++start) {
+        res += sep + vec[start];
+    }
+    return res;
+}

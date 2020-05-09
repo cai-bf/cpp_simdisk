@@ -248,7 +248,7 @@ void make_dir(vector<string> argv) {
         }
         bool succ = getDir(argv[1].substr(0, pos), curr);
         if (!succ) {
-            dprintf(output, "md目录不存在, 当前md不支持嵌套创建目录");
+            dprintf(output, "md: 目录不存在, 当前md不支持嵌套创建目录");
             return;
         }
     }

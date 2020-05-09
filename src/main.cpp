@@ -13,7 +13,8 @@ const unordered_map<std::string, fun> cmd = {
         {"dir", display_dir},
         {"md", make_dir},
         {"rd", remove_dir},
-        {"ls", ls}
+        {"ls", ls},
+        {"newfile", make_file}
 };
 
 

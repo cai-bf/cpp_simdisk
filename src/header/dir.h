@@ -24,6 +24,8 @@ struct dir {
 
 extern struct dir currDir; // 当前目录
 
+bool getDir (std::string, dir&);
+
 void cd_dir(std::vector<std::string>);
 
 void cd_dir_inner(std::string);
