@@ -11,7 +11,7 @@ using namespace std;
  * 将路径以‘/’分隔开，根据每一个子字符串判断应该向前寻找子目录还是向后返回目目录
  * 特别注意第一个字符需单独判断，因为可能是'/'根目录开头
  */
-bool getDir (string str, dir& cur_dir) {
+bool getDir (string str, struct dir& cur_dir) {
     // 路径分解
     vector<string> path_divide = split(str, "/");
     if (path_divide.empty() && str[0] != '/') {
@@ -19,7 +19,7 @@ bool getDir (string str, dir& cur_dir) {
         return false;
     }
 
-    dir tempDir = cur_dir;
+    struct dir tempDir = cur_dir;
 
     fd = fopen(FILE_NAME, "rb");
     // 判断是否根目录开头
@@ -88,7 +88,7 @@ void display_dir(vector<string> argv) {
         return;
     }
 
-    dir tempDir = currDir;
+    struct dir tempDir = currDir;
     bool success = getDir(argv[1], tempDir);
     if (!success) {
         dprintf(output, "dir路径不存在\n");
@@ -107,14 +107,14 @@ void display_dir(vector<string> argv) {
 /*
  * 递归判断目录是否有文件并删除
  */
-void remove_dir (dir &rm_dir) {
-    inode i = inodeTable[rm_dir.inode_idx];
+void remove_dir (struct dir &rm_dir) {
+    struct inode i = inodeTable[rm_dir.inode_idx];
     for (int j = 2; j < rm_dir.files_num; ++j) {
         // 判断是否为目录
         if (inodeTable[rm_dir.files[j].inode_idx].mode == DIRECTORY) {
             fd = fopen(FILE_NAME, "rb");
             fseek(fd, inodeTable[rm_dir.files[j].inode_idx].block_addr, SEEK_SET);
-            dir sub_dir{};
+            struct dir sub_dir{};
             fread(&sub_dir, sizeof(dir), 1, fd);
             fclose(fd);
             remove_dir(sub_dir);
@@ -154,7 +154,7 @@ void remove_dir(vector<string> argv) {
     }
 
     // 获取目录
-    dir tempDir = currDir;
+    struct dir tempDir = currDir;
     bool find = getDir(argv.size() == 2 ? argv[1] : argv[2], tempDir);
     if (!find) {
         dprintf(output, "rd路径不存在\n");
@@ -168,7 +168,7 @@ void remove_dir(vector<string> argv) {
     }
 
     // 判断是否用户主目录
-    dir root_dir{};
+    struct dir root_dir{};
     fd = fopen(FILE_NAME, "rb");
     fseek(fd, FIRST_DATA_ADDR, SEEK_SET);
     fread(&root_dir, sizeof(dir), 1, fd);
@@ -198,7 +198,7 @@ void remove_dir(vector<string> argv) {
     remove_dir(tempDir);
     // 删除上级目录的file项
     inode parentNode = inodeTable[tempDir.files[1].inode_idx];
-    dir parent{};
+    struct dir parent{};
     fd = fopen(FILE_NAME, "rb");
     fseek(fd, parentNode.block_addr, SEEK_SET);
     fread(&parent, sizeof(dir), 1, fd);
@@ -224,6 +224,9 @@ void remove_dir(vector<string> argv) {
     fwrite(&parent, sizeof(dir), 1, fd);
     fclose(fd);
 
+    if (currDir.inode_idx == parent.inode_idx)
+        currDir = parent;
+
     dprintf(output, "rd删除目录成功\n");
 }
 
@@ -239,7 +242,7 @@ void make_dir(vector<string> argv) {
     }
 
     // 找出最后一个目录
-    dir curr = currDir;
+    struct dir curr = currDir;
     size_t pos = argv[1].find_last_of('/');
     if (pos != -1) { // 找到 / ，表示有多级目录
         if (pos == 0) { // 位于根目录
@@ -312,7 +315,7 @@ void make_dir(vector<string> argv) {
     inodeTable[i].block_addr = FIRST_DATA_ADDR + j * BLOCK_SIZE;
 
     // 创建dir
-    dir new_dir{};
+    struct dir new_dir{};
     new_dir.inode_idx = i;
     strcpy(new_dir.name, argv[1].substr(pos + 1).c_str());
     new_dir.files_num = 2;
@@ -342,6 +345,9 @@ void make_dir(vector<string> argv) {
     fseek(fd, inodeTable[new_dir.inode_idx].block_addr, SEEK_SET);
     fwrite(&new_dir, sizeof(dir), 1, fd);
     fclose(fd);
+
+    if (curr.inode_idx == currDir.inode_idx)
+        currDir = curr;
 
     dprintf(output, "md: 创建目录成功\n");
 }

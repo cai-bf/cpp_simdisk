@@ -174,7 +174,10 @@ void help(std::vector<std::string> argv) {
     str += "查看目录: dir <path>\n";
     str += "创建目录: md <path>\n";
     str += "删除目录: rd [-f] <path> (-f 可选，表示递归删除)\n";
-    str += "创建文件: newfile <path> <content>";
+    str += "创建文件: newfile <path> <content>\n";
+    str += "获取内容: cat <path>\n";
+    str += "复制: copy <src_path> <dest_path> (若src原文件处于模拟磁盘外, 请加上<host>前缀)\n";
+    str += "删除文件: del <path>\n";
     // TODO 后续补充其他命令
     dprintf(output, str.c_str());
 }
