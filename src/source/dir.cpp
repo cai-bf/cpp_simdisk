@@ -15,7 +15,7 @@ bool getDir (string str, struct dir& cur_dir) {
     // 路径分解
     vector<string> path_divide = split(str, "/");
     if (path_divide.empty() && str[0] != '/') {
-        dprintf(output, "cd路径错误\n");
+        dprintf(output, "cd路径错误");
         return false;
     }
 
@@ -65,17 +65,17 @@ void cd_dir_inner(string str) {
  */
 void cd_dir(vector<string> argv) {
     if (argv.size() != 2) {
-        dprintf(output, "cd参数错误\n");
+        dprintf(output, "cd参数错误");
         return;
     }
 
     bool success = getDir(argv[1], currDir);
     if (!success) {
-        dprintf(output, "cd: 路径不存在\n");
+        dprintf(output, "cd: 路径不存在");
         return;
     }
     // cd完成
-    dprintf(output, "cd: 成功\n"); // TODO 后期修改为返回对应的路径
+    dprintf(output, "cd: 成功"); // TODO 后期修改为返回对应的路径
 }
 
 
@@ -84,21 +84,23 @@ void cd_dir(vector<string> argv) {
  */
 void display_dir(vector<string> argv) {
     if (argv.size() != 2) {
-        dprintf(output, "dir参数错误\n");
+        dprintf(output, "dir参数错误");
         return;
     }
 
     struct dir tempDir = currDir;
     bool success = getDir(argv[1], tempDir);
     if (!success) {
-        dprintf(output, "dir路径不存在\n");
+        dprintf(output, "dir路径不存在");
         return;
     }
     string res;
     for (int i = 0; i < tempDir.files_num; i++) {
-        res += string(tempDir.files[i].name) + "\t" +
-                (inodeTable[tempDir.files[i].inode_idx].mode == DIRECTORY ? "dir\t" : "file\t") +
-                to_string(inodeTable[tempDir.files[i].inode_idx].size) + "B \n";
+        char buf[200];
+        sprintf(buf, "%-20s %-5s  %10dB\n", tempDir.files[i].name,
+                (inodeTable[tempDir.files[i].inode_idx].mode == DIRECTORY ? "dir" : "file"),
+                  inodeTable[tempDir.files[i].inode_idx].size);
+        res += string(buf);
     }
     dprintf(output, res.c_str());
 }
@@ -149,7 +151,7 @@ void remove_dir (struct dir &rm_dir) {
  */
 void remove_dir(vector<string> argv) {
     if (argv.size() != 2 && argv.size() != 3) {
-        dprintf(output, "rd参数错误\n");
+        dprintf(output, "rd参数错误");
         return;
     }
 
@@ -157,13 +159,13 @@ void remove_dir(vector<string> argv) {
     struct dir tempDir = currDir;
     bool find = getDir(argv.size() == 2 ? argv[1] : argv[2], tempDir);
     if (!find) {
-        dprintf(output, "rd路径不存在\n");
+        dprintf(output, "rd路径不存在");
         return;
     }
 
     // 判断当前目录所有者
     if (currUser.uid != inodeTable[tempDir.inode_idx].uid) {
-        dprintf(output, "没有权限删除该目录\n");
+        dprintf(output, "没有权限删除该目录");
         return;
     }
 
@@ -189,7 +191,7 @@ void remove_dir(vector<string> argv) {
     // 判断是否强制递归删除
     if (argv[1] != "-f") {
         if (tempDir.files_num > 2) {
-            dprintf(output, "目录不为空，若要继续删除，请加上-f，详情请输入help查看帮助\n");
+            dprintf(output, "目录不为空，若要继续删除，请加上-f，详情请输入help查看帮助");
             return;
         }
     }
@@ -227,7 +229,7 @@ void remove_dir(vector<string> argv) {
     if (currDir.inode_idx == parent.inode_idx)
         currDir = parent;
 
-    dprintf(output, "rd删除目录成功\n");
+    dprintf(output, "rd删除目录成功");
 }
 
 /*
@@ -237,7 +239,7 @@ void remove_dir(vector<string> argv) {
  */
 void make_dir(vector<string> argv) {
     if (argv.size() != 2) {
-        dprintf(output, "md: 参数错误\n");
+        dprintf(output, "md: 参数错误");
         return;
     }
 
@@ -246,7 +248,7 @@ void make_dir(vector<string> argv) {
     size_t pos = argv[1].find_last_of('/');
     if (pos != -1) { // 找到 / ，表示有多级目录
         if (pos == 0) { // 位于根目录
-            dprintf(output, "md: 没有权限\n");
+            dprintf(output, "md: 没有权限");
             return;
         }
         bool succ = getDir(argv[1].substr(0, pos), curr);
@@ -258,13 +260,13 @@ void make_dir(vector<string> argv) {
 
     // 判断权限
     if (inodeTable[curr.inode_idx].uid != currUser.uid) {
-        dprintf(output, "md: 没有权限\n");
+        dprintf(output, "md: 没有权限");
         return;
     }
 
     // 获取空闲inode
     if (superBlock.free_inodes_num < 1) {
-        dprintf(output, "md: inode不足\n");
+        dprintf(output, "md: inode不足");
         return;
     }
     int i = 0;
@@ -281,7 +283,7 @@ void make_dir(vector<string> argv) {
     inodeTable[i].row = RW;
     // 找出连续的空闲块
     if (superBlock.free_blocks_num < DIR_SIZE) {
-        dprintf(output, "md: 内存不足\n");
+        dprintf(output, "md: 内存不足");
         return;
     }
     bool succ = false;
@@ -304,7 +306,7 @@ void make_dir(vector<string> argv) {
         }
     }
     if (!succ) {
-        dprintf(output, "md: 内存不足\n");
+        dprintf(output, "md: 内存不足");
         return;
     }
     // 更新bitmap
@@ -349,7 +351,7 @@ void make_dir(vector<string> argv) {
     if (curr.inode_idx == currDir.inode_idx)
         currDir = curr;
 
-    dprintf(output, "md: 创建目录成功\n");
+    dprintf(output, "md: 创建目录成功");
 }
 
 void ls(vector<string> argv) {

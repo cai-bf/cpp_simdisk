@@ -10,7 +10,7 @@ using namespace std;
 // 内部创建文件函数
 void make_file_inner(vector<string>& argv, string& msg) {
     if (argv.size() < 3) {
-        msg = "newfile: 参数错误\n";
+        msg = "newfile: 参数错误";
         return;
     }
     // 找出最后一个目录
@@ -19,12 +19,12 @@ void make_file_inner(vector<string>& argv, string& msg) {
     size_t pos = argv[1].find_last_of('/');
     if (pos != -1) { // 找到 / ，表示有多级目录
         if (pos == 0) { // 位于根目录
-            msg = "newfile: 没有权限\n";
+            msg = "newfile: 没有权限";
             return;
         }
         bool succ = getDir(argv[1].substr(0, pos), curr);
         if (!succ) {
-            msg = "newfile: 目录不存在, 不支持嵌套创建\n";
+            msg = "newfile: 目录不存在, 不支持嵌套创建";
             return;
         }
     } else {
@@ -33,7 +33,7 @@ void make_file_inner(vector<string>& argv, string& msg) {
 
     // 判断权限
     if (inodeTable[curr.inode_idx].uid != currUser.uid) {
-        msg = "newfile: 没有权限\n";
+        msg = "newfile: 没有权限";
         return;
     }
 
@@ -41,14 +41,14 @@ void make_file_inner(vector<string>& argv, string& msg) {
     for (int m = 2; m < curr.files_num; ++m) {
         if (string(curr.files[m].name) == argv[1].substr(pos + 1) &&
             inodeTable[curr.files[m].inode_idx].mode == FILE__) {
-            msg = "newfile: 已存在该文件\n";
+            msg = "newfile: 已存在该文件";
             return;
         }
     }
 
     // 获取空闲inode
     if (superBlock.free_inodes_num < 1) {
-        msg = "newfile: inode不足\n";
+        msg = "newfile: inode不足";
         return;
     }
     int i = 0;
@@ -70,7 +70,7 @@ void make_file_inner(vector<string>& argv, string& msg) {
 
     // 找出连续的空闲块
     if (superBlock.free_blocks_num < inodeTable[i].blocks) {
-        msg = "newfile: 内存不足\n";
+        msg = "newfile: 内存不足";
         return;
     }
     bool succ = false;
@@ -93,7 +93,7 @@ void make_file_inner(vector<string>& argv, string& msg) {
         }
     }
     if (!succ) {
-        msg = "newfile: 内存不足\n";
+        msg = "newfile: 内存不足";
         return;
     }
     // 更新bitmap
@@ -129,7 +129,7 @@ void make_file_inner(vector<string>& argv, string& msg) {
     fwrite(content, size, 1, fd);
     fclose(fd);
 
-    msg = "newfile: 新建文件成功\n";
+    msg = "newfile: 新建文件成功";
 
     // 如果同目录, 需要更新currDir, 不然之后的操作会出错
     if (same_dir)
@@ -147,7 +147,7 @@ void make_file(vector<string> argv) {
 
 void cat(vector<string> argv) {
     if (argv.size() != 2) {
-        dprintf(output, "cat: 参数错误\n");
+        dprintf(output, "cat: 参数错误");
         return;
     }
     // 获取当前目录及文件名
@@ -161,7 +161,7 @@ void cat(vector<string> argv) {
         } else {
             bool succ = getDir(argv[1].substr(0, pos), curr);
             if (!succ) {
-                dprintf(output, "cat: 路径错误\n");
+                dprintf(output, "cat: 路径错误");
                 return;
             }
             file_name = argv[1].substr(pos + 1);
@@ -179,7 +179,7 @@ void cat(vector<string> argv) {
         }
     }
     if (f.inode_idx == -1) {
-        dprintf(output, "cat: 文件不存在\n");
+        dprintf(output, "cat: 文件不存在");
         return;
     }
     // 获取内容
@@ -189,7 +189,7 @@ void cat(vector<string> argv) {
     fseek(fd, node.block_addr, SEEK_SET);
     fread(content, node.size, 1, fd);
     fclose(fd);
-    strcat(content, "\n");
+    strcat(content, "");
 
     dprintf(output, content);
 
@@ -210,7 +210,7 @@ void del_file(string& path, string& msg) {
         } else {
             bool succ = getDir(path.substr(0, pos), curr);
             if (!succ) {
-                dprintf(output, "cat: 路径错误\n");
+                dprintf(output, "cat: 路径错误");
                 return;
             }
             file_name = path.substr(pos + 1);
@@ -231,7 +231,7 @@ void del_file(string& path, string& msg) {
         }
     }
     if (f.inode_idx == -1) {
-        dprintf(output, "del: 文件不存在\n");
+        dprintf(output, "del: 文件不存在");
         return;
     }
     // 更新super block / bitmap
@@ -272,7 +272,7 @@ void del_file(string& path, string& msg) {
     if (same_dir)
         currDir = curr;
 
-    msg = "del: 删除文件成功\n";
+    msg = "del: 删除文件成功";
 }
 
 
@@ -281,7 +281,7 @@ void copy_outer(string src, string dest, string& msg) {
     // 打开外部文件
     FILE *outer_fd = fopen(src.c_str(),"r");
     if (outer_fd == NULL) {
-        msg = "copy: 不存在该文件\n";
+        msg = "copy: 不存在该文件";
         return;
     }
     // 获取外部文件大小
@@ -305,7 +305,7 @@ void copy_outer(string src, string dest, string& msg) {
         } else {
             bool succ = getDir(dest.substr(0, pos), dest_dir);
             if (!succ) {
-                msg = "copy: 目的文件路径错误\n";
+                msg = "copy: 目的文件路径错误";
                 return;
             }
             file_name = dest.substr(pos + 1);
@@ -315,7 +315,7 @@ void copy_outer(string src, string dest, string& msg) {
         file_name = dest;
     // 判断目的文件是否已存在, 存在的话删除, 再进行复制
     if (inodeTable[dest_dir.inode_idx].uid != currUser.uid) {
-        msg = "copy: 没有权限\n";
+        msg = "copy: 没有权限";
         return;
     }
     for (int j = 2; j < dest_dir.files_num; ++j) {
@@ -331,7 +331,7 @@ void copy_outer(string src, string dest, string& msg) {
     make_file_inner(vec, msg);
     // 判断是否成功
     if (msg.find_first_of("成功") != -1) {
-        msg = "copy: 复制成功\n";
+        msg = "copy: 复制成功";
         return;
     }
     msg = "copy" + msg.substr(7);
@@ -353,7 +353,7 @@ void copy_inner(string src, string dest, string& msg) {
         } else {
             bool succ = getDir(src.substr(0, pos), curr);
             if (!succ) {
-                msg = "copy: 源文件路径错误\n";
+                msg = "copy: 源文件路径错误";
                 return;
             }
             file_name = src.substr(pos + 1);
@@ -372,7 +372,7 @@ void copy_inner(string src, string dest, string& msg) {
         }
     }
     if (src_file.inode_idx == -1) {
-        msg = "copy: 源文件不存在\n";
+        msg = "copy: 源文件不存在";
         return;
     }
 
@@ -386,7 +386,7 @@ void copy_inner(string src, string dest, string& msg) {
         } else {
             bool succ = getDir(dest.substr(0, pos), dest_dir);
             if (!succ) {
-                msg = "copy: 目的文件路径错误\n";
+                msg = "copy: 目的文件路径错误";
                 return;
             }
             file_name = dest.substr(pos + 1);
@@ -396,7 +396,7 @@ void copy_inner(string src, string dest, string& msg) {
         file_name = dest;
     // 判断目的文件是否已存在, 存在的话删除, 再进行复制
     if (inodeTable[dest_dir.inode_idx].uid != currUser.uid) {
-        msg = "copy: 没有权限\n";
+        msg = "copy: 没有权限";
         return;
     }
     for (int j = 2; j < dest_dir.files_num; ++j) {
@@ -419,7 +419,7 @@ void copy_inner(string src, string dest, string& msg) {
     make_file_inner(vec, msg);
     // 判断是否成功
     if (msg.find_first_of("成功") != -1) {
-        msg = "copy: 复制成功\n";
+        msg = "copy: 复制成功";
         return;
     }
     msg = "copy" + msg.substr(7);
@@ -430,7 +430,7 @@ void copy_inner(string src, string dest, string& msg) {
 
 void copy(vector<string> argv) {
     if (argv.size() != 3) {
-        dprintf(output, "copy: 参数错误\n");
+        dprintf(output, "copy: 参数错误");
     }
 
     // 消息

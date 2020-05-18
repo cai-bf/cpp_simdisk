@@ -16,7 +16,7 @@ void generate() {
     // 初始化文件
     fd = fopen(FILE_NAME, "wb+");
     if (fd == nullptr) {
-        printf("创建磁盘文件失败： %s \n", strerror(errno));
+        printf("创建磁盘文件失败： %s ", strerror(errno));
         exit(1);
     }
     fseek(fd, 0, SEEK_SET); // 指针指向文件头
@@ -101,7 +101,7 @@ void generate() {
     // 写入磁盘
     fd = fopen(FILE_NAME, "rb+");
     if (fd == nullptr) {
-        printf("写入数据失败： %s \n", strerror(errno));
+        printf("写入数据失败： %s ", strerror(errno));
         exit(1);
     }
     fseek(fd, 0, SEEK_SET);
@@ -137,7 +137,7 @@ void initial() {
 
 void login(std::vector<std::string> argv) {
     if (argv.size() != 3) {
-        dprintf(output, "login参数错误，请重新确认\n");
+        dprintf(output, "login参数错误，请重新确认");
         return;
     }
     bool loged = false;
@@ -148,19 +148,18 @@ void login(std::vector<std::string> argv) {
         }
     }
     if (!loged) {
-        dprintf(output, "login: 用户或密码错误，请重新确认\n");
+        dprintf(output, "login: 用户或密码错误，请重新确认");
         return;
     }
     cd_dir_inner(std::string(currUser.name));
     char r[20] = "/";
     strcat(r, currUser.name);
     strcpy(currPath, r);
-    dprintf(output, "登陆成功\n");
-    // TODO 后期任务三需要改造成支持保存多人信息
+    dprintf(output, "登陆成功");
 }
 
 void logout(std::vector<std::string> argv) {
-    // TODO 任务一不需要该函数
+    // 这个是没必要的函数...
 }
 
 void help(std::vector<std::string> argv) {
@@ -177,7 +176,7 @@ void help(std::vector<std::string> argv) {
     str += "创建文件: newfile <path> <content>\n";
     str += "获取内容: cat <path>\n";
     str += "复制: copy <src_path> <dest_path> (若src原文件处于模拟磁盘外, 请加上<host>前缀)\n";
-    str += "删除文件: del <path>\n";
+    str += "删除文件: del <path>";
     // TODO 后续补充其他命令
     dprintf(output, str.c_str());
 }
@@ -187,7 +186,7 @@ void display_sys_info(std::vector<std::string> argv) {
     sprintf(buf, "------simdisk文件系统情况------\n"
                  "磁盘空间: %15d KB\n"
                  "已用空间: %15d KB\n"
-                 "剩余空间: %15d KB\n",
+                 "剩余空间: %15d KB",
                  superBlock.blocks_num * BLOCK_SIZE / 1024,
                  (superBlock.blocks_num - superBlock.free_blocks_num) * BLOCK_SIZE / 1024,
                  superBlock.free_blocks_num * BLOCK_SIZE / 1024);
